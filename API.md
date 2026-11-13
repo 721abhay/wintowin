@@ -289,3 +289,4 @@ X-Client-Version: 1.0.0
   }
   ```
 - **Action**: On `payment.captured`, automatically increments `brands.total_paid_amount` and recalculates 50/50 leaderboard standings.
+

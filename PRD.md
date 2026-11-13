@@ -145,3 +145,4 @@ Where:
 2. **Engagement**: Average matches played per active user $\ge 4.5$ matches/day.
 3. **Brand ROI**: Outbound store click-through rate (CTR) on trending products $\ge 8\%$.
 4. **Monetization**: Total brand sponsor boost payments processed per month.
+

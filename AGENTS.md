@@ -71,3 +71,4 @@
   - `docs(prd): update Phase 1 MVP scope`
 - Run `flutter analyze` before committing. Zero errors and zero warnings are required for every build.
 - Do not commit generated build caches (`build/`, `.dart_tool/`, `*.lock`).
+

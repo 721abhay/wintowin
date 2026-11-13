@@ -149,3 +149,4 @@ wintowin/
    - Product purchasing happens via external URLs (`url_launcher`).
    - WinToWin passes zero user financial data to third-party brand stores.
    - No payment credentials ever touch the mobile app.
+

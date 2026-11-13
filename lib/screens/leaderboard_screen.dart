@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import '../models/brand.dart';
 import '../services/wintowin_state.dart';
+import '../theme/app_theme.dart';
 import '../widgets/adaptive_dialog.dart';
+import '../widgets/score_breakdown_bar.dart';
 
 class LeaderboardScreen extends StatefulWidget {
   final WinToWinState state;
@@ -24,7 +26,7 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
       context: context,
       isScrollControlled: true,
       shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
       ),
       builder: (ctx) {
         return Padding(
@@ -43,14 +45,17 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
                 children: [
                   Row(
                     children: [
-                      CircleAvatar(
-                        radius: 16,
-                        backgroundColor: brand.brandColor,
-                        child: Icon(brand.icon, size: 16, color: Colors.white),
+                      Container(
+                        padding: const EdgeInsets.all(6),
+                        decoration: BoxDecoration(
+                          color: brand.brandColor,
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Icon(brand.icon, size: 18, color: Colors.white),
                       ),
                       const SizedBox(width: 10),
                       Text(
-                        'Boost ${brand.name.split(" ").first} Rank',
+                        'Boost ${brand.name}',
                         style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                       ),
                     ],
@@ -64,7 +69,7 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
               const SizedBox(height: 8),
               const Text(
                 'Brand payment through Razorpay / Stripe to climb the Brand Leaderboard. Rank is 50% Money + 50% Gameplay.',
-                style: TextStyle(fontSize: 13),
+                style: TextStyle(fontSize: 13, color: AppTheme.inkMuted),
               ),
               const SizedBox(height: 16),
               if (minAmountToOvertake > 0)
@@ -72,13 +77,13 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
                   width: double.infinity,
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: Colors.amber.withValues(alpha: 0.15),
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: Colors.amber.withValues(alpha: 0.4)),
+                    color: AppTheme.winGold.withValues(alpha: 0.15),
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: AppTheme.winGold),
                   ),
                   child: Text(
                     '⚡ Min. ₹${minAmountToOvertake.toInt()} needed to overtake the brand above.',
-                    style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Color(0xFFB45309)),
+                    style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: AppTheme.onGold),
                   ),
                 ),
               const SizedBox(height: 16),
@@ -88,7 +93,7 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
                 decoration: InputDecoration(
                   labelText: 'Boost Amount (₹ INR)',
                   prefixText: '₹ ',
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
                 ),
               ),
               const SizedBox(height: 20),
@@ -132,6 +137,10 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
     final maxPaid = widget.state.maxPaidAmount;
     final maxPoints = widget.state.maxPlayerPoints;
     final topPlayers = widget.state.topPlayers;
+    final myBrand = widget.state.playerBrand;
+
+    final myBrandRank = rankedBrands.indexWhere((b) => b.id == myBrand.id) + 1;
+    final myBrandScore = myBrand.calculateCombinedScore(maxPaid, maxPoints);
 
     return Scaffold(
       appBar: AppBar(
@@ -169,21 +178,22 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
 
           // Brands Leaderboard Tab
           if (_selectedTab == 0) ...[
-            // Formula Information Box (PRD Section 7)
+            // Formula Information Box (DESIGN.md Section 1 & 6.4)
             Container(
               margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
                 color: theme.colorScheme.surfaceContainerHighest,
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: AppTheme.line),
               ),
-              child: Row(
+              child: const Row(
                 children: [
-                  Icon(Icons.balance_rounded, size: 18, color: theme.colorScheme.primary),
-                  const SizedBox(width: 10),
-                  const Expanded(
+                  Icon(Icons.balance_rounded, size: 18, color: AppTheme.primary),
+                  SizedBox(width: 10),
+                  Expanded(
                     child: Text(
-                      'Rank Score = 50% Money Score + 50% Gameplay Points. 100% Public & Fair.',
+                      'Rank Score = 50% Money Score + 50% Gameplay Points. Fixed layout for all brands.',
                       style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
                     ),
                   ),
@@ -193,7 +203,7 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
 
             Expanded(
               child: ListView.separated(
-                padding: const EdgeInsets.all(16),
+                padding: const EdgeInsets.fromLTRB(16, 12, 16, 80), // Padding for sticky bottom row
                 itemCount: rankedBrands.length,
                 separatorBuilder: (context, index) => const SizedBox(height: 12),
                 itemBuilder: (context, index) {
@@ -201,154 +211,210 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
                   final rank = index + 1;
                   final combinedScore = brand.calculateCombinedScore(maxPaid, maxPoints);
 
-                  // Calculate amount needed to pass the brand above (PRD Section 5.4)
+                  final double moneyScore = maxPaid > 0 ? (brand.totalPaidAmount / maxPaid) * 100 : 0.0;
+                  final double playScore = maxPoints > 0 ? (brand.playerPoints / maxPoints) * 100 : 0.0;
+
+                  // Overtake calculation
                   double amountToOvertake = 0.0;
                   if (index > 0) {
                     final brandAbove = rankedBrands[index - 1];
                     amountToOvertake = (brandAbove.totalPaidAmount - brand.totalPaidAmount) + 5000;
                   }
 
-                  Color rankBadgeColor = isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0);
-                  Color rankTextColor = isDark ? Colors.white : Colors.black87;
-
-                  if (rank == 1) {
-                    rankBadgeColor = const Color(0xFFF59E0B);
-                    rankTextColor = Colors.black87;
-                  } else if (rank == 2) {
-                    rankBadgeColor = const Color(0xFF94A3B8);
-                    rankTextColor = Colors.black87;
-                  } else if (rank == 3) {
-                    rankBadgeColor = const Color(0xFFB45309);
-                    rankTextColor = Colors.white;
-                  }
+                  // Rank Badge (DESIGN.md Section 6.3)
+                  // Gold fill for rank 1, line fill with ink text for others
+                  final isRankOne = rank == 1;
 
                   return Card(
-                    child: Padding(
-                      padding: const EdgeInsets.all(16.0),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
+                    clipBehavior: Clip.antiAlias,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // 4 dp stripe on that brand's card header (DESIGN.md Section 3.3)
+                        Container(
+                          height: 4,
+                          width: double.infinity,
+                          color: brand.brandColor,
+                        ),
+
+                        Padding(
+                          padding: const EdgeInsets.all(16.0),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              // Rank Number
-                              CircleAvatar(
-                                radius: 16,
-                                backgroundColor: rankBadgeColor,
-                                child: Text(
-                                  '#$rank',
-                                  style: TextStyle(
-                                    fontWeight: FontWeight.w900,
-                                    fontSize: 13,
-                                    color: rankTextColor,
-                                  ),
-                                ),
-                              ),
-                              const SizedBox(width: 12),
-
-                              // Brand Icon & Name
-                              CircleAvatar(
-                                radius: 18,
-                                backgroundColor: brand.brandColor,
-                                child: Icon(brand.icon, color: Colors.white, size: 18),
-                              ),
-                              const SizedBox(width: 12),
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      brand.name,
-                                      style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-                                    ),
-                                    Text(
-                                      '${brand.supportersCount} Supporters',
-                                      style: theme.textTheme.bodySmall,
-                                    ),
-                                  ],
-                                ),
-                              ),
-
-                              // Combined Rank Score
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.end,
+                              Row(
                                 children: [
-                                  Text(
-                                    combinedScore.toStringAsFixed(1),
-                                    style: TextStyle(
-                                      fontWeight: FontWeight.w900,
-                                      fontSize: 18,
-                                      color: theme.colorScheme.primary,
+                                  // Rank badge (Circle with rank number)
+                                  CircleAvatar(
+                                    radius: 16,
+                                    backgroundColor: isRankOne ? AppTheme.winGold : AppTheme.line,
+                                    child: Text(
+                                      '#$rank',
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.w800,
+                                        fontSize: 13,
+                                        color: isRankOne ? AppTheme.onGold : AppTheme.ink,
+                                      ),
                                     ),
                                   ),
-                                  const Text(
-                                    'Score',
-                                    style: TextStyle(fontSize: 11, fontWeight: FontWeight.w500),
+                                  const SizedBox(width: 12),
+
+                                  // Brand logo chip background only (DESIGN.md Section 3.3)
+                                  Container(
+                                    padding: const EdgeInsets.all(8),
+                                    decoration: BoxDecoration(
+                                      color: brand.brandColor,
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                    child: Icon(brand.icon, color: Colors.white, size: 18),
+                                  ),
+                                  const SizedBox(width: 12),
+
+                                  // Brand Name & Supporter count
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          brand.name,
+                                          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                                        ),
+                                        Text(
+                                          '${brand.supportersCount} Supporters',
+                                          style: const TextStyle(fontSize: 12, color: AppTheme.inkMuted),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+
+                                  // Combined Score (Tabular figures)
+                                  Column(
+                                    crossAxisAlignment: CrossAxisAlignment.end,
+                                    children: [
+                                      Text(
+                                        combinedScore.toStringAsFixed(1),
+                                        style: const TextStyle(
+                                          fontWeight: FontWeight.w800,
+                                          fontSize: 20,
+                                          fontFeatures: [FontFeature.tabularFigures()],
+                                          color: AppTheme.primary,
+                                        ),
+                                      ),
+                                      const Text(
+                                        'Final Score',
+                                        style: TextStyle(fontSize: 11, color: AppTheme.inkMuted),
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ),
+
+                              const SizedBox(height: 14),
+
+                              // Reusable Score Breakdown Bar (DESIGN.md Section 6.4)
+                              ScoreBreakdownBar(
+                                moneyScore: moneyScore,
+                                playerScore: playScore,
+                                totalPaid: brand.totalPaidAmount,
+                                playerPoints: brand.playerPoints,
+                              ),
+
+                              const SizedBox(height: 12),
+
+                              // Overtake notice or Top Leader badge
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: [
+                                  if (rank == 1)
+                                    const Text(
+                                      '👑 Defending #1 Leader',
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.bold,
+                                        color: AppTheme.warning,
+                                      ),
+                                    )
+                                  else
+                                    Text(
+                                      'Needs ₹${amountToOvertake.toInt()} to pass #${rank - 1}',
+                                      style: const TextStyle(
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.w600,
+                                        color: AppTheme.danger,
+                                      ),
+                                    ),
+                                  FilledButton.tonal(
+                                    onPressed: () => _showBoostBrandDialog(context, brand, amountToOvertake),
+                                    style: FilledButton.styleFrom(
+                                      visualDensity: VisualDensity.compact,
+                                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                                    ),
+                                    child: const Text('Boost (Brand Pay)'),
                                   ),
                                 ],
                               ),
                             ],
                           ),
-
-                          const SizedBox(height: 14),
-
-                          // Transparent Score Breakdown (PRD Section 7)
-                          Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                            decoration: BoxDecoration(
-                              color: theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Text(
-                                  'Total Paid: ₹${(brand.totalPaidAmount / 1000).toInt()}k',
-                                  style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
-                                ),
-                                Container(height: 12, width: 1, color: isDark ? Colors.white24 : Colors.black26),
-                                Text(
-                                  'Player Points: ${brand.playerPoints}',
-                                  style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
-                                ),
-                              ],
-                            ),
-                          ),
-
-                          const SizedBox(height: 12),
-
-                          // Overtake notice or Top Leader badge
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              if (rank == 1)
-                                const Text(
-                                  '👑 Defending #1 Champion',
-                                  style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Color(0xFFF59E0B)),
-                                )
-                              else
-                                Text(
-                                  'Needs ₹${amountToOvertake.toInt()} to pass #${rank - 1}',
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.w600,
-                                    color: theme.colorScheme.error,
-                                  ),
-                                ),
-                              FilledButton.tonal(
-                                onPressed: () => _showBoostBrandDialog(context, brand, amountToOvertake),
-                                style: FilledButton.styleFrom(
-                                  visualDensity: VisualDensity.compact,
-                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                                ),
-                                child: const Text('Boost (Brand Pay)'),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
+                        ),
+                      ],
                     ),
                   );
                 },
+              ),
+            ),
+
+            // Sticky "Your Brand" Row at bottom (DESIGN.md Section 13)
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              decoration: BoxDecoration(
+                color: isDark ? AppTheme.ink : AppTheme.surface,
+                border: const Border(top: BorderSide(color: AppTheme.line, width: 1.5)),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.08),
+                    offset: const Offset(0, -3),
+                    blurRadius: 8,
+                  ),
+                ],
+              ),
+              child: Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(6),
+                    decoration: BoxDecoration(
+                      color: myBrand.brandColor,
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                    child: Icon(myBrand.icon, color: Colors.white, size: 16),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          'Your Brand: ${myBrand.name}',
+                          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+                        ),
+                        Text(
+                          'Rank #$myBrandRank • Score ${myBrandScore.toStringAsFixed(1)}',
+                          style: const TextStyle(fontSize: 11, color: AppTheme.inkMuted),
+                        ),
+                      ],
+                    ),
+                  ),
+                  FilledButton(
+                    onPressed: () {
+                      Navigator.of(context).pushNamed('/play');
+                    },
+                    style: FilledButton.styleFrom(
+                      visualDensity: VisualDensity.compact,
+                      padding: const EdgeInsets.symmetric(horizontal: 12),
+                    ),
+                    child: const Text('Play for Brand'),
+                  ),
+                ],
               ),
             ),
           ] else ...[
@@ -363,7 +429,7 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
                   final isMe = player.name.contains('(You)');
 
                   return Card(
-                    color: isMe ? theme.colorScheme.primaryContainer.withValues(alpha: 0.4) : null,
+                    color: isMe ? AppTheme.primary.withValues(alpha: 0.08) : null,
                     child: ListTile(
                       leading: CircleAvatar(
                         backgroundColor: player.avatarColor,
@@ -386,10 +452,13 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
                             Container(
                               padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                               decoration: BoxDecoration(
-                                color: theme.colorScheme.primary,
+                                color: AppTheme.primary,
                                 borderRadius: BorderRadius.circular(6),
                               ),
-                              child: const Text('YOU', style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold)),
+                              child: const Text(
+                                'YOU',
+                                style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold),
+                              ),
                             ),
                           ],
                         ],
@@ -410,7 +479,7 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
                             style: TextStyle(
                               fontWeight: FontWeight.w900,
                               fontSize: 16,
-                              color: player.rank <= 3 ? const Color(0xFFF59E0B) : null,
+                              color: player.rank == 1 ? AppTheme.winGold : null,
                             ),
                           ),
                           Text(
@@ -430,4 +499,3 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
     );
   }
 }
-
