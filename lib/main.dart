@@ -1,11 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'core/supabase_config.dart';
 import 'services/wintowin_state.dart';
 import 'theme/app_theme.dart';
 import 'screens/main_navigation_screen.dart';
 
-void main() {
+Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Initialize Supabase (with graceful offline fallback)
+  await SupabaseConfig.initialize();
 
   // Crisp system overlay for iOS and Android
   SystemChrome.setSystemUIOverlayStyle(

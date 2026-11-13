@@ -62,5 +62,57 @@ class Reward {
       deliveryStatus: deliveryStatus ?? this.deliveryStatus,
     );
   }
+
+  factory Reward.fromJson(Map<String, dynamic> json, {String brandName = ''}) {
+    final typeStr = (json['type'] as String? ?? 'voucher').toLowerCase();
+    final type = typeStr == 'physical_product' || typeStr == 'physicalproduct'
+        ? RewardType.physicalProduct
+        : RewardType.voucher;
+
+    DateTime expiry;
+    if (json['valid_until'] != null) {
+      expiry = DateTime.tryParse(json['valid_until'] as String) ??
+          DateTime.now().add(const Duration(days: 30));
+    } else if (json['expiry_date'] != null) {
+      expiry = DateTime.tryParse(json['expiry_date'] as String) ??
+          DateTime.now().add(const Duration(days: 30));
+    } else {
+      expiry = DateTime.now().add(const Duration(days: 30));
+    }
+
+    return Reward(
+      id: json['id'] as String? ?? '',
+      brandId: json['brand_id'] as String? ?? '',
+      brandName: brandName.isNotEmpty ? brandName : (json['brand_name'] as String? ?? ''),
+      title: json['title'] as String? ?? '',
+      description: json['description'] as String? ?? '',
+      type: type,
+      promoCode: json['promo_code'] as String?,
+      discountValue: json['discount_text'] as String? ?? json['discount_value'] as String?,
+      expiryDate: expiry,
+      isClaimed: json['status'] == 'claimed' || json['is_claimed'] == true,
+      shippingAddress: json['shipping_address'] as String?,
+      trackingNumber: json['tracking_number'] as String?,
+      deliveryStatus: json['delivery_status'] as String?,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'brand_id': brandId,
+      'brand_name': brandName,
+      'title': title,
+      'description': description,
+      'type': type == RewardType.physicalProduct ? 'physical_product' : 'voucher',
+      'promo_code': promoCode,
+      'discount_text': discountValue,
+      'valid_until': expiryDate.toIso8601String(),
+      'status': isClaimed ? 'claimed' : 'available',
+      'shipping_address': shippingAddress,
+      'tracking_number': trackingNumber,
+      'delivery_status': deliveryStatus,
+    };
+  }
 }
 

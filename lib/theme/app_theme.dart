@@ -60,7 +60,7 @@ class AppTheme {
           elevation: 0,
           backgroundColor: primary,
           foregroundColor: onPrimary,
-          minimumSize: const Size(double.infinity, 48),
+          minimumSize: const Size(64, 48),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
           ),
@@ -75,7 +75,7 @@ class AppTheme {
           elevation: 0,
           backgroundColor: primary,
           foregroundColor: onPrimary,
-          minimumSize: const Size(double.infinity, 48),
+          minimumSize: const Size(64, 48),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
           ),
@@ -89,7 +89,7 @@ class AppTheme {
         style: OutlinedButton.styleFrom(
           foregroundColor: ink,
           side: const BorderSide(color: line, width: 1),
-          minimumSize: const Size(double.infinity, 48),
+          minimumSize: const Size(64, 48),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
           ),
@@ -165,7 +165,7 @@ class AppTheme {
           elevation: 0,
           backgroundColor: const Color(0xFF139675),
           foregroundColor: onPrimary,
-          minimumSize: const Size(double.infinity, 48),
+          minimumSize: const Size(64, 48),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
           ),
@@ -180,7 +180,7 @@ class AppTheme {
           elevation: 0,
           backgroundColor: const Color(0xFF139675),
           foregroundColor: onPrimary,
-          minimumSize: const Size(double.infinity, 48),
+          minimumSize: const Size(64, 48),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
           ),
@@ -194,7 +194,7 @@ class AppTheme {
         style: OutlinedButton.styleFrom(
           foregroundColor: const Color(0xFFF6F4EF),
           side: const BorderSide(color: Color(0xFF282B36), width: 1),
-          minimumSize: const Size(double.infinity, 48),
+          minimumSize: const Size(64, 48),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
           ),

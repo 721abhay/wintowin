@@ -5,9 +5,30 @@ import '../models/product.dart';
 import '../models/reward.dart';
 import '../models/player_profile.dart';
 import '../models/leaderboard_player.dart';
+import '../data/repositories/auth_repository.dart';
+import '../data/repositories/brand_repository.dart';
+import '../data/repositories/match_repository.dart';
+import '../data/repositories/rewards_repository.dart';
 
 class WinToWinState extends ChangeNotifier {
   ThemeMode _themeMode = ThemeMode.system;
+
+  final AuthRepository _authRepo;
+  final BrandRepository _brandRepo;
+  final MatchRepository _matchRepo;
+  final RewardsRepository _rewardsRepo;
+
+  WinToWinState({
+    AuthRepository? authRepo,
+    BrandRepository? brandRepo,
+    MatchRepository? matchRepo,
+    RewardsRepository? rewardsRepo,
+  })  : _authRepo = authRepo ?? SupabaseAuthRepository(),
+        _brandRepo = brandRepo ?? SupabaseBrandRepository(),
+        _matchRepo = matchRepo ?? SupabaseMatchRepository(),
+        _rewardsRepo = rewardsRepo ?? SupabaseRewardsRepository() {
+    refreshFromBackend();
+  }
 
   // Active Player
   PlayerProfile _player = const PlayerProfile(
@@ -23,7 +44,7 @@ class WinToWinState extends ChangeNotifier {
   );
 
   // Brands List
-  final List<Brand> _brands = [
+  List<Brand> _brands = [
     const Brand(
       id: 'brand_nike',
       name: 'Nike Sportswear',
@@ -153,7 +174,7 @@ class WinToWinState extends ChangeNotifier {
   ];
 
   // Player Rewards / Wallet
-  final List<Reward> _rewards = [
+  List<Reward> _rewards = [
     Reward(
       id: 'rew_1',
       brandId: 'brand_nike',
@@ -255,6 +276,27 @@ class WinToWinState extends ChangeNotifier {
   List<Reward> get rewards => List.unmodifiable(_rewards);
   List<LeaderboardPlayer> get topPlayers => List.unmodifiable(_topPlayers);
 
+  // Repositories
+  AuthRepository get authRepo => _authRepo;
+  BrandRepository get brandRepo => _brandRepo;
+  MatchRepository get matchRepo => _matchRepo;
+  RewardsRepository get rewardsRepo => _rewardsRepo;
+
+  // Sync with Supabase backend
+  Future<void> refreshFromBackend() async {
+    try {
+      final backendBrands = await _brandRepo.getBrands();
+      if (backendBrands.isNotEmpty) {
+        _brands = backendBrands;
+      }
+      final backendRewards = await _rewardsRepo.getUserRewards(_player.id);
+      if (backendRewards.isNotEmpty) {
+        _rewards = backendRewards;
+      }
+      notifyListeners();
+    } catch (_) {}
+  }
+
   // Maximum paid amount among all brands (used for Money Score normalization)
   double get maxPaidAmount {
     if (_brands.isEmpty) return 1.0;
@@ -316,6 +358,9 @@ class WinToWinState extends ChangeNotifier {
       lastBrandSwitchDate: now,
     );
     notifyListeners();
+
+    // Async backend update
+    _authRepo.updateSupportedBrand(_player.id, newBrandId).catchError((_) {});
     return true;
   }
 
@@ -373,6 +418,9 @@ class WinToWinState extends ChangeNotifier {
       );
       notifyListeners();
     }
+
+    // Async backend edge function invocation
+    _brandRepo.boostBrandRank(brandId: brandId, amount: additionalAmount).catchError((_) => <String, dynamic>{});
   }
 
   // Claim a Physical Product Reward
@@ -391,6 +439,15 @@ class WinToWinState extends ChangeNotifier {
       );
       notifyListeners();
     }
+
+    // Async backend update
+    _rewardsRepo.claimPhysicalReward(
+      rewardId: rewardId,
+      fullName: _player.name,
+      shippingAddress: shippingAddress,
+      pinCode: '560038',
+      phone: _player.phoneNumber,
+    ).catchError((_) {});
   }
 }
 

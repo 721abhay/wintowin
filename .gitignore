@@ -47,3 +47,10 @@ app.*.map.json
 # Temporary files
 0.26.0
 
+# Node & Next.js web portal
+node_modules/
+.next/
+out/
+.env*.local
+
+
