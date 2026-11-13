@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'services/app_state.dart';
+import 'services/wintowin_state.dart';
 import 'theme/app_theme.dart';
 import 'screens/main_navigation_screen.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Ensure system overlay style looks crisp on both iOS and Android status bars
+  // Crisp system overlay for iOS and Android
   SystemChrome.setSystemUIOverlayStyle(
     const SystemUiOverlayStyle(
       statusBarColor: Colors.transparent,
@@ -27,26 +27,26 @@ class WinToWinApp extends StatefulWidget {
 }
 
 class _WinToWinAppState extends State<WinToWinApp> {
-  final AppState _appState = AppState();
+  final WinToWinState _state = WinToWinState();
 
   @override
   void dispose() {
-    _appState.dispose();
+    _state.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return ListenableBuilder(
-      listenable: _appState,
+      listenable: _state,
       builder: (context, _) {
         return MaterialApp(
-          title: 'WinToWin Mobile',
+          title: 'WinToWin',
           debugShowCheckedModeBanner: false,
           theme: AppTheme.lightTheme,
           darkTheme: AppTheme.darkTheme,
-          themeMode: _appState.themeMode,
-          home: MainNavigationScreen(appState: _appState),
+          themeMode: _state.themeMode,
+          home: MainNavigationScreen(state: _state),
         );
       },
     );

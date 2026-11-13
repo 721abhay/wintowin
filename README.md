@@ -1,150 +1,76 @@
-# WinToWin — Cross-Platform Mobile App (iOS & Android)
+# WinToWin — Mobile Gaming & Brand Battles (iOS & Android)
 
-A modern, production-structured mobile application built with **Flutter**, designed to run natively on both **Apple iOS** and **Google Android** from a single shared Dart codebase.
-
----
-
-## 📱 Features & Highlights
-
-- **Universal Mobile Architecture**: 100% shared business logic and UI between iOS and Android.
-- **Adaptive UI & Themes**: Material 3 for Android with Cupertino styling adaptation for iOS.
-- **Dark Mode & Light Mode**: Live reactive theme switching with system auto-detection.
-- **Dashboard & Performance KPI Cards**: Native frame rate metrics (120 FPS Impeller pipeline), device statistics, and module completion counters.
-- **Interactive Roadmap & Modules**: Task toggle, expandable detail sheets, and modular design.
-- **Native Hardware Exploration**: Curated guides for Camera, Biometrics (Face ID/Fingerprint), Geolocation, SQLite/Hive, and Push Notifications (APNs/FCM).
-- **Deployment Checklist**: Store readiness score and build guides for Google Play & Apple App Store.
+**WinToWin** is a competitive mobile game app where users support their favorite brands, play casual 1v1 duels, and win real rewards (coupons, discount vouchers, and physical products). Brands pay to climb the Brand Leaderboard, while users never pay anything.
 
 ---
 
-## 📁 Project Directory Structure
+## 🏆 Core Mechanics & PRD Implementation
 
-```text
-wintowin/
-├── android/                      # Native Android project (Gradle, Kotlin, Manifest)
-│   ├── app/
-│   │   ├── build.gradle.kts      # Android application build configuration
-│   │   └── src/main/
-│   │       ├── AndroidManifest.xml # Permissions (INTERNET, ACCESS_NETWORK_STATE)
-│   │       ├── kotlin/           # MainActivity.kt
-│   │       └── res/              # App icons, splash screens, XML drawables
-│   └── build.gradle.kts          # Top-level Gradle script
-├── ios/                          # Native iOS project (Xcode, CocoaPods, Swift)
-│   ├── Runner/
-│   │   ├── AppDelegate.swift     # iOS entry lifecycle
-│   │   ├── Info.plist            # iOS permissions, orientations, bundle configuration
-│   │   └── Assets.xcassets       # iOS AppIcon & LaunchImage sets
-│   └── Runner.xcodeproj          # Xcode project settings
-├── lib/                          # Main Flutter application source
-│   ├── main.dart                 # Application entrypoint & theme initialization
-│   ├── models/                   # Data transfer objects & entity models
-│   │   └── feature_item.dart
-│   ├── screens/                  # Main UI views
-│   │   ├── main_navigation_screen.dart # Bottom navigation bar container
-│   │   ├── home_screen.dart      # Dashboard & KPI metrics
-│   │   ├── explore_screen.dart   # Native module catalog
-│   │   ├── activity_screen.dart  # Release readiness & build commands
-│   │   └── settings_screen.dart  # Theme switcher & device diagnostics
-│   ├── services/                 # State management & business logic
-│   │   └── app_state.dart
-│   ├── theme/                    # Material 3 & color palette configuration
-│   │   └── app_theme.dart
-│   └── widgets/                  # Reusable components
-│       ├── adaptive_dialog.dart  # Cupertino on iOS, Material on Android
-│       ├── platform_badge.dart   # Real-time target engine indicator
-│       └── stat_card.dart        # Metric card component
-├── test/                         # Unit & widget tests
-│   └── widget_test.dart
-├── pubspec.yaml                  # Dependencies, fonts, assets
-└── analysis_options.yaml         # Dart linter & code health rules
-```
+### 1. The 50/50 Brand Ranking Formula
+A brand's final rank is determined transparently:
+$$\text{Rank Score} = (0.5 \times \text{Money Score}) + (0.5 \times \text{Player Score})$$
+- **Money Score**: $(\text{Brand's Total Paid} \div \text{Highest Brand Paid}) \times 100$
+- **Player Score**: $(\text{Brand's Supporter Points} \div \text{Highest Player Points}) \times 100$
+
+> **Brand Outbidding Rule**: To climb, a brand must pay more than the brand above it. The app shows how much each brand has paid and exactly how much is needed to overtake the rank above.
 
 ---
 
-## 🚀 Getting Started
+## 📱 App Navigation (5 Core Bottom Tabs)
 
-### 1. Verify Prerequisites
-Run Flutter doctor to check your environment:
+1. **Home (`HomeScreen`)**:
+   - **#1 Top Brand Banner**: Spotlight showcase for the reigning champion brand.
+   - **Live Brand Battles**: Head-to-head clashes (e.g. Nike vs Adidas, boAt vs Noise) with live percentage bars.
+   - **Trending Products**: Top brand wishlist items with direct **"Shop on Site"** links (zero shipping/logistics for WinToWin).
+   - **Daily Player Point Cap**: 1,000 pts/day cap to eliminate bot dominance and ensure fair play.
+
+2. **Play (`PlayScreen`)**:
+   - **1v1 Brand Trivia Duel**: 5 rapid-fire questions with speed bonuses.
+   - **1v1 Reaction Duel**: Millisecond reflex duel ("Wait for GREEN... TAP!").
+   - **Smart Matchmaking**: Real-time matching with automatic 10-second bot fallback.
+   - **Victory Reward Drops**: Random voucher drops (65%-70% chance on win).
+
+3. **Leaderboard (`LeaderboardScreen`)**:
+   - **Brand Rankings**: Live rank, total paid, player points, 50/50 combined score, amount to overtake, and interactive Razorpay boost demo.
+   - **Top Supporters**: Community leaderboard showing individual player points and brand loyalty badges.
+
+4. **Rewards Wallet (`RewardsScreen`)**:
+   - **Digital Vouchers**: Instant coupons with copy code and expiry timers.
+   - **Physical Products**: In-app claim form with address entry and courier tracking updates.
+
+5. **Profile (`ProfileScreen`)**:
+   - User profile and supported brand loyalty card.
+   - **7-day Brand Switch Cooldown**: Prevents opportunistic hopping to whichever brand is winning.
+   - Match win rates, current streaks, and theme mode toggle (Light/Dark/System).
+
+---
+
+## 🎮 Launch Games
+
+| Game | Mode | Time | Mechanic |
+| :--- | :--- | :--- | :--- |
+| **Brand Trivia Quiz** | 1v1 | 60 - 90s | Slogans, logos, products, and culture trivia with countdown timer. |
+| **Reflex Reaction Duel** | 1v1 | 30 - 45s | Millisecond stopwatch duel; best of 3 rounds; false start detection. |
+
+---
+
+## 🚀 Running the App Locally
+
 ```bash
-flutter doctor
-```
-
-Accept Android SDK licenses if needed:
-```bash
-flutter doctor --android-licenses
-```
-
-### 2. Run the App Locally
-
-#### On Android (Emulator or Connected USB Device):
-1. Enable **USB Debugging** on your Android phone, or start an Android Virtual Device (AVD).
-2. Run:
-```bash
+# 1. Run live with Hot Reload:
 flutter run
-```
 
-#### On iOS:
-> **Note**: Building the native iOS `.ipa` or running in the iOS Simulator requires macOS with Xcode. However, your code is 100% iOS-ready! You can build/test via cloud CI/CD (such as GitHub Actions or Codemagic) or on a Mac:
-```bash
-flutter run -d ios
-```
+# 2. Build Android APK:
+flutter build apk --split-per-abi
 
-#### On Chrome / Desktop (Instant Preview):
-You can also preview the UI immediately on your computer:
-```bash
-flutter run -d chrome
+# 3. Build Google Play Store Bundle:
+flutter build appbundle
 ```
 
 ---
 
-## 📦 Building for Production & App Stores
+## ☁️ Continuous Integration & Builds (GitHub Actions)
 
-### 🤖 Google Play Store (Android)
-
-1. **Build App Bundle (Recommended by Google Play)**:
-   ```bash
-   flutter build appbundle
-   ```
-   *Output*: `build/app/outputs/bundle/release/app-release.aab`
-
-2. **Build Standalone APKs (For direct distribution / testing)**:
-   ```bash
-   flutter build apk --split-per-abi
-   ```
-   *Output*: `build/app/outputs/flutter-apk/app-arm64-v8a-release.apk`
-
----
-
-### 🍎 Apple App Store (iOS)
-
-1. **Build iOS Archive & IPA**:
-   ```bash
-   flutter build ipa
-   ```
-   *Output*: `build/ios/archive/Runner.xcarchive` and `build/ios/ipa/wintowin.ipa`
-
-2. Upload to App Store Connect using Xcode Organizer, Transporter, or Fastlane.
-
----
-
-## 🛠 Recommended Packages for Native Features
-
-To add advanced device hardware integrations, add these standard Flutter community plugins:
-
-| Feature | Recommended Package | Command |
-| :--- | :--- | :--- |
-| **Camera & Photos** | `image_picker` | `flutter pub add image_picker` |
-| **Local Storage** | `shared_preferences` | `flutter pub add shared_preferences` |
-| **Relational Database** | `sqflite` | `flutter pub add sqflite` |
-| **Biometric Auth** | `local_auth` | `flutter pub add local_auth` |
-| **Push Notifications** | `firebase_messaging` | `flutter pub add firebase_messaging` |
-| **Network Requests** | `dio` or `http` | `flutter pub add http` |
-| **Location & GPS** | `geolocator` | `flutter pub add geolocator` |
-
----
-
-## 🧪 Testing
-
-Execute the test suite:
-```bash
-flutter test
-```
+Every push to [`https://github.com/721abhay/wintowin`](https://github.com/721abhay/wintowin) triggers the `.github/workflows/build.yml` pipeline:
+- Builds Android Release APK & AAB
+- Builds iOS `.ipa` payload on free GitHub macOS runners

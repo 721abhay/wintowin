@@ -1,14 +1,15 @@
 import 'package:flutter/material.dart';
-import '../services/app_state.dart';
+import '../services/wintowin_state.dart';
 import 'home_screen.dart';
-import 'explore_screen.dart';
-import 'activity_screen.dart';
-import 'settings_screen.dart';
+import 'play_screen.dart';
+import 'leaderboard_screen.dart';
+import 'rewards_screen.dart';
+import 'profile_screen.dart';
 
 class MainNavigationScreen extends StatefulWidget {
-  final AppState appState;
+  final WinToWinState state;
 
-  const MainNavigationScreen({super.key, required this.appState});
+  const MainNavigationScreen({super.key, required this.state});
 
   @override
   State<MainNavigationScreen> createState() => _MainNavigationScreenState();
@@ -26,10 +27,11 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
   @override
   Widget build(BuildContext context) {
     final screens = [
-      HomeScreen(appState: widget.appState, onNavigate: _onTabSelected),
-      const ExploreScreen(),
-      const ActivityScreen(),
-      SettingsScreen(appState: widget.appState),
+      HomeScreen(state: widget.state, onNavigate: _onTabSelected),
+      PlayScreen(state: widget.state),
+      LeaderboardScreen(state: widget.state),
+      RewardsScreen(state: widget.state),
+      ProfileScreen(state: widget.state),
     ];
 
     return Scaffold(
@@ -47,23 +49,27 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
             label: 'Home',
           ),
           NavigationDestination(
-            icon: Icon(Icons.explore_outlined),
-            selectedIcon: Icon(Icons.explore_rounded),
-            label: 'Explore',
+            icon: Icon(Icons.sports_esports_outlined),
+            selectedIcon: Icon(Icons.sports_esports_rounded),
+            label: 'Play',
           ),
           NavigationDestination(
-            icon: Icon(Icons.task_alt_outlined),
-            selectedIcon: Icon(Icons.task_alt_rounded),
-            label: 'Readiness',
+            icon: Icon(Icons.leaderboard_outlined),
+            selectedIcon: Icon(Icons.leaderboard_rounded),
+            label: 'Board',
           ),
           NavigationDestination(
-            icon: Icon(Icons.settings_outlined),
-            selectedIcon: Icon(Icons.settings_rounded),
-            label: 'Settings',
+            icon: Icon(Icons.card_giftcard_outlined),
+            selectedIcon: Icon(Icons.card_giftcard_rounded),
+            label: 'Rewards',
+          ),
+          NavigationDestination(
+            icon: Icon(Icons.person_outline_rounded),
+            selectedIcon: Icon(Icons.person_rounded),
+            label: 'Profile',
           ),
         ],
       ),
     );
   }
 }
-
