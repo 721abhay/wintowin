@@ -4,6 +4,7 @@ import '../services/wintowin_state.dart';
 import '../theme/app_theme.dart';
 import '../widgets/adaptive_dialog.dart';
 import '../widgets/score_breakdown_bar.dart';
+import 'brand/brand_detail_screen.dart';
 
 class LeaderboardScreen extends StatefulWidget {
   final WinToWinState state;
@@ -227,19 +228,27 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
 
                   return Card(
                     clipBehavior: Clip.antiAlias,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        // 4 dp stripe on that brand's card header (DESIGN.md Section 3.3)
-                        Container(
-                          height: 4,
-                          width: double.infinity,
-                          color: brand.brandColor,
-                        ),
+                    child: InkWell(
+                      onTap: () {
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (_) => BrandDetailScreen(brand: brand, state: widget.state),
+                          ),
+                        );
+                      },
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          // 4 dp stripe on that brand's card header (DESIGN.md Section 3.3)
+                          Container(
+                            height: 4,
+                            width: double.infinity,
+                            color: brand.brandColor,
+                          ),
 
-                        Padding(
-                          padding: const EdgeInsets.all(16.0),
-                          child: Column(
+                          Padding(
+                            padding: const EdgeInsets.all(16.0),
+                            child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Row(
@@ -358,7 +367,8 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
                         ),
                       ],
                     ),
-                  );
+                  ),
+                );
                 },
               ),
             ),
