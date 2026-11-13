@@ -26,3 +26,4 @@ class Product {
   int get discountPercentage =>
       originalPrice > 0 ? (((originalPrice - discountPrice) / originalPrice) * 100).round() : 0;
 }
+

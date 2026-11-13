@@ -377,3 +377,4 @@ class _QuizGameScreenState extends State<QuizGameScreen> {
     );
   }
 }
+

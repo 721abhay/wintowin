@@ -25,3 +25,4 @@ class BrandBattle {
   double get brandAPercentage => totalPoints > 0 ? (brandAPlayerScore / totalPoints) * 100 : 50.0;
   double get brandBPercentage => totalPoints > 0 ? (brandBPlayerScore / totalPoints) * 100 : 50.0;
 }
+

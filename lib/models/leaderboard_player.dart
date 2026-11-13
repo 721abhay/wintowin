@@ -21,3 +21,4 @@ class LeaderboardPlayer {
     required this.wins,
   });
 }
+

@@ -304,3 +304,4 @@ class _ReactionDuelScreenState extends State<ReactionDuelScreen> {
     );
   }
 }
+
